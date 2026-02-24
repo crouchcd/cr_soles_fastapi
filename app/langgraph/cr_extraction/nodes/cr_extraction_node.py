@@ -4,7 +4,7 @@ from app.core.logger import set_log
 from app.langgraph.cr_extraction.state import CrExtractionState
 
 
-async def extraction_node(state: CrExtractionState) -> CrExtractionState:
+async def cr_extraction_node(state: CrExtractionState) -> CrExtractionState:
     """Extract data for the current page.
 
     This node is meant to be used in a graph loop:
@@ -15,7 +15,7 @@ async def extraction_node(state: CrExtractionState) -> CrExtractionState:
     page_index = int(state.get("current_page_index") or 0)
 
     set_log(
-        f"cr_extraction.extraction_node: page_index={page_index} pages={len(pages)}"
+        f"cr_extraction.cr_extraction_node: page_index={page_index} pages={len(pages)}"
     )
 
     if not pages:
