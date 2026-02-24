@@ -1,6 +1,6 @@
-from fastapi import APIRouter, File, Form, HTTPException, UploadFile, Depends
+from fastapi import APIRouter, HTTPException, Depends, Body
 
-# from app.services.multimodal_extraction.service import run_service
+from app.services.cr_extraction.service import run_service
 from app.core.logger import set_log
 from app.core.db import get_db
 from sqlalchemy.orm import Session
@@ -13,18 +13,13 @@ router_prefix = "/cr_extraction"
 
 @router.post(f"{router_prefix}/extract", tags=["document"])
 async def extract_document(
-    pdf: UploadFile = File(...),
-    ingestion_source: str = Form("web"),
-    prompt: str = Form("Describe the document"),
+    payload: dict | str = Body(...),
     db: Session = Depends(get_db),
 ):
     set_log("cr_extraction")
-    pdf_bytes = await pdf.read()
 
     try:
-        result = await run_service(
-            pdf_bytes, ingestion_source, pdf.content_type, prompt, db
-        )
+        result = await run_service(payload, db)
         set_log("CR extraction done", level="info")
         return result
     except ValueError as exc:

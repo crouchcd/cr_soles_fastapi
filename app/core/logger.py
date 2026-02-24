@@ -51,8 +51,8 @@ def _build_logger(
     Path(log_dir).mkdir(parents=True, exist_ok=True)
     fh = RotatingFileHandler(
         filename=str(Path(log_dir) / log_file),
-        maxBytes=10 * 1024 * 1024,  # 10MB
-        backupCount=5,
+        maxBytes=5 * 1024 * 1024,  # 10MB
+        backupCount=10,
         encoding="utf-8",
     )
     fh.setLevel(numeric_level)
@@ -84,9 +84,7 @@ def set_logging_level(level: str) -> None:
 def set_log(message: str, *, level: str = "INFO") -> None:
     """
     Public logging function you can import and use anywhere.
-
-    - Prints to console via StreamHandler
-    - Persists to file via RotatingFileHandler
+    - Use this custom function instead of calling logger methods directly to ensure consistent formatting and log level handling.
     """
     lvl = level.upper()
     if lvl == "DEBUG":
