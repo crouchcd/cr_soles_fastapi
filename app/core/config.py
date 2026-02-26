@@ -1,4 +1,3 @@
-import os
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -11,6 +10,8 @@ class Settings(BaseSettings):
 
     app_name: str
     api_prefix: str
+
+    app_env: str = "dev"  # set APP_ENV=prod in production to disable docs
 
     # db_host: str
     # db_port: int
@@ -32,6 +33,10 @@ class Settings(BaseSettings):
     embedding_port: int
     embedding_model: str
     embedding_dimension: int
+
+    @property
+    def is_production(self) -> bool:
+        return self.app_env.strip().lower() in {"prod", "production"}
 
     # @property
     # def database_url(self) -> str:

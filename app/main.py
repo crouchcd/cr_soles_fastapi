@@ -8,7 +8,13 @@ from app.routers.paper_review_route import router as paper_review_router
 from app.routers.cr_extraction_route import router as cr_extraction_router
 from app.core.logger import set_log
 
-app = FastAPI(title=settings.app_name)
+is_prod = settings.is_production
+app = FastAPI(
+    title=settings.app_name,
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    openapi_url=None if is_prod else "/openapi.json",
+)
 set_log("App started")
 
 origins = [
@@ -34,6 +40,6 @@ app.include_router(cr_extraction_router, prefix=settings.api_prefix)
 set_log("Routers loaded successfully")
 
 
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+# @app.get("/")
+# async def root():
+#     return {"message": "Hello World"}
