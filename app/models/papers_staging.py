@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Any
 
 from sqlalchemy import Text, Integer, DateTime, func, text, ForeignKey, Identity
-from sqlalchemy.dialects.postgresql import ARRAY, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 from pgvector.sqlalchemy import Vector
 
@@ -37,6 +38,11 @@ class PapersStaging(Base):
     journal: Mapped[str | None] = mapped_column(Text)
     year: Mapped[int | None] = mapped_column(Integer)
     abstract: Mapped[str | None] = mapped_column(Text)
+    # pages content example: {"page": 1, "text": "...", "tables": [], "images": []}
+    pages_content: Mapped[list[dict[str, Any]] | None] = mapped_column(
+        JSONB,
+        nullable=True,
+    )
     pdf_url: Mapped[str | None] = mapped_column(Text)
     ingestion_source: Mapped[str | None] = mapped_column(Text)
     ingestion_timestamp: Mapped[datetime] = mapped_column(

@@ -131,6 +131,7 @@ async def run_service(
         journal=journal,
         year=year,
         abstract=abstract,
+        pages_content=pages,
         pdf_url=pdf_url,
         ingestion_source=ingestion_source,
         embedding=embedding if embedding else None,

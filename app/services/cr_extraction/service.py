@@ -18,6 +18,7 @@ async def run_service(
 
     # Fetch paper details from DB
     paper = get_paper_by_id(db, paper_id=paper_id)
+    print(paper.pages_content)
 
     try:
         print("frame")

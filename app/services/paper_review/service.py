@@ -160,6 +160,7 @@ def approve_paper_staging(db: Session, idx: int) -> PapersStaging:
             "journal": item.journal,
             "year": item.year,
             "abstract": item.abstract,
+            "pages_content": item.pages_content,
             "pdf_url": item.pdf_url,
             "ingestion_source": item.ingestion_source,
             "embedding": item.embedding,
@@ -219,6 +220,7 @@ def update_paper_staging(
             "journal": cleaned.get("journal", original.journal),
             "year": cleaned.get("year", original.year),
             "abstract": merged_abstract,
+            "pages_content": original.pages_content,
             "pdf_url": cleaned.get("pdf_url", original.pdf_url),
             "ingestion_source": cleaned.get(
                 "ingestion_source", original.ingestion_source
@@ -259,6 +261,7 @@ def update_paper_staging(
             journal=edited_fields["journal"],
             year=edited_fields["year"],
             abstract=edited_fields["abstract"],
+            pages_content=edited_fields["pages_content"],
             pdf_url=edited_fields["pdf_url"],
             ingestion_source=edited_fields["ingestion_source"],
             embedding=edited_fields["embedding"],
@@ -334,6 +337,7 @@ def update_paper(
             journal=updated.journal,
             year=updated.year,
             abstract=updated.abstract,
+            pages_content=updated.pages_content,
             pdf_url=updated.pdf_url,
             ingestion_source=updated.ingestion_source,
             embedding=embedding_to_log,
