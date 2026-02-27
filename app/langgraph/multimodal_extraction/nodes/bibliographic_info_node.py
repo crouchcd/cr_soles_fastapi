@@ -13,7 +13,7 @@ from app.langgraph.multimodal_extraction.state import DocumentState
 from app.clients.vllm_client import VllmClient
 
 from app.core.logger import set_log
-from app.enums.multimodal_extraction.enums import VllmTaskType
+from app.enums.multimodal_extraction import VllmTaskType
 
 
 REQUIRED_FIELDS = ("title", "authors", "journal", "year", "abstract")

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from app.common_utils.embedding import embed_bibliographic_info_sync
 from app.core.logger import set_log
-from app.enums.paper_review.enums import ReviewTableType
+from app.enums.paper_review import ReviewTableType
 from app.models.papers import Papers
 from app.models.papers_staging import PapersStaging
 from app.repositories.papers_repository import (
@@ -207,9 +207,8 @@ def update_paper_staging(
 
     merged_title = cleaned.get("title", original.title)
     merged_abstract = cleaned.get("abstract", original.abstract)
-    should_reembed = (
-        ("title" in cleaned and merged_title != original.title)
-        or ("abstract" in cleaned and merged_abstract != original.abstract)
+    should_reembed = ("title" in cleaned and merged_title != original.title) or (
+        "abstract" in cleaned and merged_abstract != original.abstract
     )
 
     with db.begin_nested():
@@ -306,9 +305,8 @@ def update_paper(
 
     merged_title = cleaned.get("title", item.title)
     merged_abstract = cleaned.get("abstract", item.abstract)
-    should_reembed = (
-        ("title" in cleaned and merged_title != item.title)
-        or ("abstract" in cleaned and merged_abstract != item.abstract)
+    should_reembed = ("title" in cleaned and merged_title != item.title) or (
+        "abstract" in cleaned and merged_abstract != item.abstract
     )
 
     with db.begin_nested():

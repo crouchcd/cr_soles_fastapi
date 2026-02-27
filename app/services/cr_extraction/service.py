@@ -1,26 +1,33 @@
 from __future__ import annotations
 
-from app.langgraph.multimodal_extraction import get_document_graph
 from app.core.logger import set_log
 from sqlalchemy.orm import Session
+from app.langgraph.cr_extraction import get_cr_extraction_graph
+from app.repositories.papers_repository import (
+    get_paper_by_id,
+)
+from app.schemas.cr_extraction import CRExtractionRequest
 
 
 async def run_service(
-    payload: dict | str,
+    payload: CRExtractionRequest,
     db: Session,
 ) -> dict:
-
+    paper_id = payload.paper_id
     set_log("Processing extraction service")
+
+    # Fetch paper details from DB
+    paper = get_paper_by_id(db, paper_id=paper_id)
 
     try:
         print("frame")
     finally:
         print("finally")
 
-    graph = get_document_graph()
+    graph = get_cr_extraction_graph()
 
     state = {
-        "payload": payload,
+        "payload": paper_id,
     }
 
     set_log("Invoking document graph")

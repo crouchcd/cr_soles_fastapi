@@ -9,7 +9,7 @@ from app.core.prompts import get_vlm_ocr_system_prompt
 from app.langgraph.multimodal_extraction.state import DocumentState
 from app.clients.vllm_client import VllmClient
 from app.core.logger import set_log
-from app.enums.multimodal_extraction.enums import VllmTaskType
+from app.enums.multimodal_extraction import VllmTaskType
 
 
 async def run_ocr(state: DocumentState) -> DocumentState:

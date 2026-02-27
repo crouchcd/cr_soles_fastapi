@@ -3,7 +3,7 @@ from typing import Any, Optional
 import httpx
 from app.core.config import settings
 from app.core.logger import set_log
-from app.enums.multimodal_extraction.enums import VllmTaskType
+from app.enums.multimodal_extraction import VllmTaskType
 
 
 class VllmClient:

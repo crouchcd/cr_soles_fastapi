@@ -9,7 +9,7 @@ from app.services.paper_review.service import (
 from app.core.logger import set_log
 from app.core.db import get_db
 from sqlalchemy.orm import Session
-from app.enums.paper_review.enums import ReviewTableType
+from app.enums.paper_review import ReviewTableType
 
 
 router = APIRouter()
