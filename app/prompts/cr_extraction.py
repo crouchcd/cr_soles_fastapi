@@ -4,7 +4,9 @@ import json
 from typing import Any
 
 
-def _build_pages_context(pages_content: list[dict[str, Any]], max_pages: int = 8) -> str:
+def _build_pages_context(
+    pages_content: list[dict[str, Any]], max_pages: int = 8
+) -> str:
     parts: list[str] = []
     for item in pages_content[:max_pages]:
         page = item.get("page")
@@ -33,7 +35,7 @@ Output schema:
   "age_band": "young" | "middle" | "older" | "mixed" | null,
   "clinical_condition_tags": [string],
   "country_setting": string | null,
-  "evidence": [string],
+  "evidence": [{"page": int, "quote": string}],
   "confidence": float
 }
 
@@ -41,7 +43,8 @@ Rules:
 - Use short, normalized values.
 - If not found, use null or [].
 - confidence must be between 0 and 1.
-- evidence should contain short direct snippets or short table phrases.
+- evidence quotes must be copied exactly from the provided page text.
+- every evidence item must include the correct page number.
 """.strip()
 
 
@@ -50,7 +53,9 @@ def get_population_user_prompt(
     extra_instruction: str | None = None,
 ) -> str:
     context = _build_pages_context(pages_content)
-    instruction = f"Additional instruction: {extra_instruction}\n\n" if extra_instruction else ""
+    instruction = (
+        f"Additional instruction: {extra_instruction}\n\n" if extra_instruction else ""
+    )
     return (
         "Extract the study population information from the pages below.\n"
         "Prioritize Methods, Participants, Sample, and Table 1 style content.\n\n"
@@ -67,20 +72,21 @@ Return JSON only. No markdown. No explanation.
 Output schema:
 {
   "instrument_name": string | null,
-  "instrument_family": "CRIq" | "CRQ" | "LEQ" | "NART" | "MWT-B" | "mCRS" | "CRASH" | "CR-interview" | "multi_proxy_custom" | "not_detected",
+  "instrument_family": ["CRIq" | "CRQ" | "LEQ" | "NART" | "MWT-B" | "mCRS" | "CRASH" | "CR-interview" | "multi_proxy_custom" | "not_detected"],
   "detected_proxy_labels": [string],
   "scoring_method": string | null,
   "time_administration": string | null,
-  "evidence": [string],
+  "evidence": [{"page": int, "quote": string}],
   "confidence": float
 }
 
 Rules:
-- Pick only one instrument family.
-- If several are mentioned, choose the most clearly used cognitive reserve measure.
+- Pick instruments that have been applied to the study (not from the related work).
 - If no named instrument exists but CR proxies are listed, use instrument_family="multi_proxy_custom".
 - Use normalized proxy labels such as education, occupation, leisure, social, multilingualism, music, physical_activity, iq_proxy.
 - confidence must be between 0 and 1.
+- evidence quotes must be copied exactly from the provided page text.
+- every evidence item must include the correct page number.
 """.strip()
 
 
@@ -91,11 +97,45 @@ def get_instrument_user_prompt(
 ) -> str:
     context = _build_pages_context(pages_content)
     population_text = json.dumps(population or {}, ensure_ascii=False)
-    instruction = f"Additional instruction: {extra_instruction}\n" if extra_instruction else ""
+    instruction = (
+        f"Additional instruction: {extra_instruction}\n" if extra_instruction else ""
+    )
     return (
         "Extract one primary cognitive reserve instrument or proxy set from the pages below.\n"
         "Prioritize questionnaire names, assessed CR proxies, cognitive scales, and scoring/time fields.\n"
         f"{instruction}"
         f"Population context: {population_text}\n\n"
+        f"{context}\n"
+    )
+
+
+def get_population_verify_prompt(
+    pages_content: list[dict[str, Any]],
+    candidate: dict[str, Any],
+) -> str:
+    context = _build_pages_context(pages_content, max_pages=len(pages_content))
+    candidate_json = json.dumps(candidate, ensure_ascii=False)
+    return (
+        "Re-validate the population extraction against only the pages below.\n"
+        "Keep a field only if it is directly supported by the page text.\n"
+        "Evidence quotes must be exact substrings from the page text.\n"
+        "Return the same JSON schema.\n\n"
+        f"CANDIDATE:\n{candidate_json}\n\n"
+        f"{context}\n"
+    )
+
+
+def get_instrument_verify_prompt(
+    pages_content: list[dict[str, Any]],
+    candidate: dict[str, Any],
+) -> str:
+    context = _build_pages_context(pages_content, max_pages=len(pages_content))
+    candidate_json = json.dumps(candidate, ensure_ascii=False)
+    return (
+        "Re-validate the cognitive reserve instrument extraction against only the pages below.\n"
+        "Keep a field only if it is directly supported by the page text.\n"
+        "Evidence quotes must be exact substrings from the page text.\n"
+        "Return the same JSON schema.\n\n"
+        f"CANDIDATE:\n{candidate_json}\n\n"
         f"{context}\n"
     )

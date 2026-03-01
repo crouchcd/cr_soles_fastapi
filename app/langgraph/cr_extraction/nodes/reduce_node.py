@@ -12,6 +12,7 @@ async def reduce_node(state: CrExtractionState) -> CrExtractionState:
         "age_band": population.get("age_band"),
         "clinical_condition_tags": population.get("clinical_condition_tags", []),
         "country_setting": population.get("country_setting"),
+        "population_evidence_pages": population.get("evidence_pages", []),
         "instrument_name": cr_operationalization.get("instrument_name"),
         "instrument_family": cr_operationalization.get(
             "instrument_family", "not_detected"
@@ -21,6 +22,7 @@ async def reduce_node(state: CrExtractionState) -> CrExtractionState:
         ),
         "scoring_method": cr_operationalization.get("scoring_method"),
         "time_administration": cr_operationalization.get("time_administration"),
+        "instrument_evidence_pages": cr_operationalization.get("evidence_pages", []),
         "population_confidence": population.get("confidence"),
         "instrument_confidence": cr_operationalization.get("confidence"),
     }

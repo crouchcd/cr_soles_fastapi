@@ -1,31 +1,16 @@
 from __future__ import annotations
 
-import json
 import time
-from typing import Any
 
 from app.core.logger import set_log
 from app.enums.multimodal_extraction import VllmTaskType
 from app.langgraph.cr_extraction.state import CrExtractionState
+from app.langgraph.cr_extraction.nodes.common import parse_json_object
 from app.prompts.cr_extraction import (
     get_instrument_system_prompt,
     get_instrument_user_prompt,
 )
 from app.utils.stream_invoke import stream_node_llm_and_collect
-
-
-def _parse_json_object(text: str) -> dict[str, Any]:
-    cleaned = text.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.strip("`").strip()
-        if cleaned.lower().startswith("json"):
-            cleaned = cleaned[4:].strip()
-
-    start = cleaned.find("{")
-    end = cleaned.rfind("}")
-    if start == -1 or end == -1 or end <= start:
-        raise ValueError("No JSON object found in streamed response.")
-    return json.loads(cleaned[start : end + 1])
 
 
 async def instrument_router_node(state: CrExtractionState) -> CrExtractionState:
@@ -51,7 +36,7 @@ async def instrument_router_node(state: CrExtractionState) -> CrExtractionState:
 
     raw_text = str(result.get("text") or "")
     try:
-        cr_operationalization = _parse_json_object(raw_text)
+        cr_operationalization = parse_json_object(raw_text)
     except Exception as exc:
         set_log(f"instrument_router_node parse failed: {exc}", level="error")
         cr_operationalization = {
@@ -72,6 +57,7 @@ async def instrument_router_node(state: CrExtractionState) -> CrExtractionState:
     return {
         "cr_operationalization": cr_operationalization,
         "detected_instruments": [detected_name] if detected_name else [],
+        "validation_target": "instrument",
         "debug_events": events,
         "last_node": "instrument_router_node",
     }

@@ -1,31 +1,16 @@
 from __future__ import annotations
 
-import json
 import time
-from typing import Any
 
 from app.core.logger import set_log
 from app.enums.multimodal_extraction import VllmTaskType
 from app.langgraph.cr_extraction.state import CrExtractionState
+from app.langgraph.cr_extraction.nodes.common import parse_json_object
 from app.prompts.cr_extraction import (
     get_population_system_prompt,
     get_population_user_prompt,
 )
 from app.utils.stream_invoke import stream_node_llm_and_collect
-
-
-def _parse_json_object(text: str) -> dict[str, Any]:
-    cleaned = text.strip()
-    if cleaned.startswith("```"):
-        cleaned = cleaned.strip("`").strip()
-        if cleaned.lower().startswith("json"):
-            cleaned = cleaned[4:].strip()
-
-    start = cleaned.find("{")
-    end = cleaned.rfind("}")
-    if start == -1 or end == -1 or end <= start:
-        raise ValueError("No JSON object found in streamed response.")
-    return json.loads(cleaned[start : end + 1])
 
 
 async def population_node(state: CrExtractionState) -> CrExtractionState:
@@ -46,7 +31,7 @@ async def population_node(state: CrExtractionState) -> CrExtractionState:
 
     raw_text = str(result.get("text") or "")
     try:
-        population = _parse_json_object(raw_text)
+        population = parse_json_object(raw_text)
     except Exception as exc:
         set_log(f"population_node parse failed: {exc}", level="error")
         population = {
@@ -65,6 +50,7 @@ async def population_node(state: CrExtractionState) -> CrExtractionState:
 
     return {
         "population": population,
+        "validation_target": "population",
         "debug_events": events,
         "last_node": "population_node",
     }
