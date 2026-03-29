@@ -68,8 +68,6 @@ cr_soles_fastapi
 │   │   └── paper_review.py
 │   └── utils/
 │       └── embedding.py
-├── cloud_model_script.md
-├── db_creation.sql
 ├── docker-compose.yaml
 ├── Dockerfile
 ├── logs/
@@ -80,6 +78,21 @@ cr_soles_fastapi
 ├── supabase/
 │   └── config.toml
 └── uv.lock
+```
+
+### package management
+
+We are using `uv` for package management. To set up the environment, run:
+
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+uv sync
+```
+
+And then install dependencies:
+
+```bash
+uv pip install -r requirements.txt
 ```
 
 ### Summary of Key Directories/Files
