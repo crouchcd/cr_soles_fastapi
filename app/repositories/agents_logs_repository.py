@@ -1,33 +1,42 @@
 from __future__ import annotations
+
+from datetime import datetime
+
 from sqlalchemy.orm import Session
 
-from app.models.agents_logs import AgentLogs
+from app.models.agents_logs import PipelineRuns
 
 
-def create_agent_log(
+def create_pipeline_run(
     db: Session,
     *,
-    agent_name: str,
     paper_id=None,
-    extraction_id=None,
-    raw_output: str | None = None,
-    cleaned_output: dict | None = None,
-    input_text: str | None = None,
-    node_name: str | None = None,
-    prompt_hash: str | None = None,
-    model_name: str | None = None,
-) -> AgentLogs:
-    log = AgentLogs(
+    run_type: str | None = None,
+    status: str | None = None,
+    triggered_by=None,
+    runpod_instance_label: str | None = None,
+    git_commit_sha: str | None = None,
+    pipeline_version: str | None = None,
+    config_json: dict | None = None,
+    started_at: datetime | None = None,
+    finished_at: datetime | None = None,
+    duration_seconds: int | None = None,
+    error_summary: str | None = None,
+) -> PipelineRuns:
+    run = PipelineRuns(
         paper_id=paper_id,
-        extraction_id=extraction_id,
-        agent_name=agent_name,
-        raw_output=raw_output,
-        cleaned_output=cleaned_output,
-        input=input_text,
-        node_name=node_name,
-        prompt_hash=prompt_hash,
-        model_name=model_name,
+        run_type=run_type,
+        status=status,
+        triggered_by=triggered_by,
+        runpod_instance_label=runpod_instance_label,
+        git_commit_sha=git_commit_sha,
+        pipeline_version=pipeline_version,
+        config_json=config_json,
+        started_at=started_at,
+        finished_at=finished_at,
+        duration_seconds=duration_seconds,
+        error_summary=error_summary,
     )
-    db.add(log)
+    db.add(run)
     db.flush()
-    return log
+    return run

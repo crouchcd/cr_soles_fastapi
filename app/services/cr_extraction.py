@@ -57,7 +57,13 @@ def _resolve_pages_content(
     if paper is None:
         raise ValueError(f"Paper not found: {payload.paper_id}")
 
-    return str(payload.paper_id), _normalize_pages_content(paper.pages_content)
+    # pages_content is no longer stored in the papers table.
+    # Full text is now stored in paper_files (file_kind='ocr_text').
+    # Please provide pages_content directly in the request payload.
+    raise ValueError(
+        "pages_content must be provided in the request; "
+        "full text is now stored in paper_files, not the papers table."
+    )
 
 
 # async def run_service(

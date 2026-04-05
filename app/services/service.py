@@ -6,10 +6,7 @@ import fitz  # PyMuPDF
 
 from app.langgraph.multimodal_extraction import get_document_graph
 from app.core.logger import set_log
-from app.repositories.papers_staging_repository import (
-    find_similar_papers,
-    create_papers_staging,
-)
+from app.repositories.papers_staging_repository import create_papers_staging
 from sqlalchemy.orm import Session
 
 
@@ -67,78 +64,33 @@ async def run_service(
 
     set_log("Invoking document graph")
 
-    # invoke the graph
     result = await graph.ainvoke(state)
     pages_content = result.get("ocr_pages", [])
 
     bibliographic_info = result.get("bibliographic_info") or {}
     missing_fields = result.get("missing_fields", [])
 
-    # embedding and similar document search
-    embedding = result.get("embedding")
-    similar_doc = []
-    if embedding:
-        similar_doc = find_similar_papers(
-            db,
-            embedding=embedding,
-            limit=1,
-            min_similarity=0.90,
-        )
-
-    # Similar to DB session management in routers
-    if similar_doc:
-        similar_documents = [
-            {
-                "id": item.get("id"),
-                "title": item.get("title"),
-                "similarity": item.get("similarity"),
-            }
-            for item in similar_doc
-        ]
-        result["similar_documents"] = similar_documents
-        set_log(
-            f"Similar documents found: {similar_doc} with similarity {similar_doc[0]['similarity'] if similar_doc else 'N/A'}"
-        )
-
-        matched_paper_id = similar_doc[0].get("id")
-        return {
-            "pages_content": pages_content,
-            "bibliographic_info": bibliographic_info,
-            "missing_fields": missing_fields,
-            "page_count": len(pages_content),
-            "paper_id": matched_paper_id,
-            "similar_documents": similar_documents,
-        }
-    else:
-        set_log("No similar documents found in the database.")
-        result["similar_documents"] = []
-
     title = bibliographic_info.get("title") or "Unknown title"
-    authors = bibliographic_info.get("authors") or []
-    journal = bibliographic_info.get("journal") or None
-    year = bibliographic_info.get("year")
     abstract = bibliographic_info.get("abstract") or None
-    pdf_url = bibliographic_info.get("pdf_url") or None
-
-    # title = "Unknown title"
-    # authors = ["test"]
-    # journal = "nature"
-    # year = 2025
-    # abstract = "This is a test abstract."
-    # pdf_url = None
-    # embedding = None
+    doi = bibliographic_info.get("doi") or None
+    pmid = bibliographic_info.get("pmid") or None
+    year_published = bibliographic_info.get("year_published") or bibliographic_info.get("year")
+    journal = bibliographic_info.get("journal") or None
+    first_author = bibliographic_info.get("first_author") or None
+    authors_display = bibliographic_info.get("authors_display") or None
 
     paper = create_papers_staging(
         db,
         title=title,
-        authors=authors,
-        journal=journal,
-        year=year,
         abstract=abstract,
-        pages_content=pages_content,
-        pdf_url=pdf_url,
-        ingestion_source=ingestion_source,
-        embedding=embedding if embedding else None,
+        doi=doi,
+        pmid=pmid,
+        year_published=year_published,
+        journal=journal,
+        first_author=first_author,
+        authors_display=authors_display,
+        source_type=ingestion_source,
+        ingestion_status="queued",
     )
 
     return {
@@ -149,10 +101,3 @@ async def run_service(
         "paper_id": paper.id,
         "similar_documents": [],
     }
-    # return {
-    #     "pages_content": [],
-    #     "bibliographic_info": {},
-    #     "missing_fields": {},
-    #     "page_count": 0,
-    #     "paper_id": paper.id,
-    # }

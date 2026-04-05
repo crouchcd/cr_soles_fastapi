@@ -2,15 +2,15 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Text, DateTime, func, text, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import Text, Integer, DateTime, func, text, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.core.db import Base
 
 
-class AgentLogs(Base):
-    __tablename__ = "agents_logs"
+class PipelineRuns(Base):
+    __tablename__ = "pipeline_runs"
     __table_args__ = {"schema": "cr_soles"}
 
     id: Mapped[UUID] = mapped_column(
@@ -22,18 +22,21 @@ class AgentLogs(Base):
         UUID(as_uuid=True),
         ForeignKey("cr_soles.papers.id", ondelete="SET NULL"),
     )
-    extraction_id: Mapped[UUID | None] = mapped_column(
+    run_type: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str | None] = mapped_column(Text)
+    triggered_by: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.extractions.id", ondelete="SET NULL"),
+        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
     )
-    agent_name: Mapped[str] = mapped_column(Text, nullable=False)
-    raw_output: Mapped[str | None] = mapped_column(Text)
-    cleaned_output: Mapped[dict | None] = mapped_column(JSONB)
-    input: Mapped[str | None] = mapped_column(Text)
-    node_name: Mapped[str | None] = mapped_column(Text)
-    prompt_hash: Mapped[str | None] = mapped_column(Text)
-    model_name: Mapped[str | None] = mapped_column(Text)
-    timestamp: Mapped[datetime] = mapped_column(
+    runpod_instance_label: Mapped[str | None] = mapped_column(Text)
+    git_commit_sha: Mapped[str | None] = mapped_column(Text)
+    pipeline_version: Mapped[str | None] = mapped_column(Text)
+    config_json: Mapped[dict | None] = mapped_column(JSONB)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    duration_seconds: Mapped[int | None] = mapped_column(Integer)
+    error_summary: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
@@ -41,15 +44,19 @@ class AgentLogs(Base):
 
     papers = relationship(
         "Papers",
-        back_populates="agents_logs",
-        primaryjoin="AgentLogs.paper_id == Papers.id",
+        back_populates="pipeline_runs",
+        primaryjoin="PipelineRuns.paper_id == Papers.id",
         foreign_keys=paper_id,
+        passive_deletes=True,
+    )
+    pipeline_steps = relationship(
+        "PipelineSteps",
+        back_populates="pipeline_runs",
+        cascade="all, delete-orphan",
         passive_deletes=True,
     )
     extractions = relationship(
         "Extractions",
-        back_populates="agents_logs",
-        primaryjoin="AgentLogs.extraction_id == Extractions.id",
-        foreign_keys=extraction_id,
+        back_populates="pipeline_runs",
         passive_deletes=True,
     )

@@ -1,15 +1,12 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
 
-from sqlalchemy import Text, Integer, DateTime, func, text
-from sqlalchemy.dialects.postgresql import ARRAY, UUID, JSONB
+from sqlalchemy import Text, Integer, Boolean, DateTime, func, text, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
-from pgvector.sqlalchemy import Vector
 
 from app.core.db import Base
-from app.core.config import settings
 
 
 class Papers(Base):
@@ -22,28 +19,39 @@ class Papers(Base):
         server_default=text("gen_random_uuid()"),
     )
     title: Mapped[str] = mapped_column(Text, nullable=False)
-    authors: Mapped[list[str]] = mapped_column(
-        ARRAY(Text),
-        nullable=False,
-        server_default=text("'{}'::text[]"),
-    )
-    journal: Mapped[str | None] = mapped_column(Text)
-    year: Mapped[int | None] = mapped_column(Integer)
     abstract: Mapped[str | None] = mapped_column(Text)
-    # pages content example: {"page": 1, "text": "...", "tables": [], "images": []}
-    pages_content: Mapped[list[dict[str, Any]] | None] = mapped_column(
-        JSONB,
-        nullable=True,
+    doi: Mapped[str | None] = mapped_column(Text, unique=True)
+    pmid: Mapped[str | None] = mapped_column(Text)
+    year_published: Mapped[int | None] = mapped_column(Integer)
+    journal: Mapped[str | None] = mapped_column(Text)
+    first_author: Mapped[str | None] = mapped_column(Text)
+    authors_display: Mapped[str | None] = mapped_column(Text)
+    source_type: Mapped[str | None] = mapped_column(Text)
+    source_record_id: Mapped[str | None] = mapped_column(Text)
+    pdf_storage_path: Mapped[str | None] = mapped_column(Text)
+    full_text_available: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
     )
-    pdf_url: Mapped[str | None] = mapped_column(Text)
-    ingestion_source: Mapped[str | None] = mapped_column(Text)
-    ingestion_timestamp: Mapped[datetime] = mapped_column(
+    ocr_required: Mapped[bool | None] = mapped_column(Boolean)
+    language: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default=text("'en'")
+    )
+    ingestion_status: Mapped[str | None] = mapped_column(Text)
+    dedupe_key: Mapped[str | None] = mapped_column(Text)
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_by: Mapped[UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+    )
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
     )
-    embedding: Mapped[list[float] | None] = mapped_column(
-        Vector(settings.embedding_dimension)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
     )
 
     extractions = relationship(
@@ -52,12 +60,17 @@ class Papers(Base):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
-    agents_logs = relationship(
-        "AgentLogs",
+    pipeline_runs = relationship(
+        "PipelineRuns",
         back_populates="papers",
         passive_deletes=True,
     )
-
+    paper_files = relationship(
+        "PaperFiles",
+        back_populates="papers",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
     staging_items = relationship(
         "PapersStaging",
         back_populates="papers",

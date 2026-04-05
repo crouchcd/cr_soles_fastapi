@@ -5,7 +5,6 @@ from uuid import UUID
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 
-from app.utils.embedding import embed_bibliographic_info_sync
 from app.core.logger import set_log
 from app.enums.paper_review import ReviewTableType
 from app.models.papers import Papers
@@ -14,6 +13,7 @@ from app.repositories.papers_repository import (
     list_papers,
     get_paper_by_id,
     update_paper_fields,
+    create_paper,
 )
 from app.repositories.papers_staging_repository import (
     list_papers_staging,
@@ -22,18 +22,19 @@ from app.repositories.papers_staging_repository import (
     create_papers_staging,
     update_papers_staging_fields,
 )
-from app.repositories.papers_repository import (
-    create_paper,
-)
 
 ALLOWED_EDIT_KEYS = (
     "title",
-    "authors",
-    "journal",
-    "year",
     "abstract",
-    "pdf_url",
-    "ingestion_source",
+    "doi",
+    "pmid",
+    "year_published",
+    "journal",
+    "first_author",
+    "authors_display",
+    "source_type",
+    "ingestion_status",
+    "notes",
 )
 
 
@@ -44,13 +45,17 @@ def _serialize_papers_staging(item: PapersStaging) -> dict:
         "is_approved": item.is_approved,
         "approval_timestamp": item.approval_timestamp,
         "title": item.title,
-        "authors": item.authors,
-        "journal": item.journal,
-        "year": item.year,
         "abstract": item.abstract,
-        "pdf_url": item.pdf_url,
-        "ingestion_source": item.ingestion_source,
-        "ingestion_timestamp": item.ingestion_timestamp,
+        "doi": item.doi,
+        "pmid": item.pmid,
+        "year_published": item.year_published,
+        "journal": item.journal,
+        "first_author": item.first_author,
+        "authors_display": item.authors_display,
+        "source_type": item.source_type,
+        "ingestion_status": item.ingestion_status,
+        "notes": item.notes,
+        "created_at": item.created_at,
     }
 
 
@@ -58,13 +63,17 @@ def _serialize_papers(item: Papers) -> dict:
     return {
         "id": item.id,
         "title": item.title,
-        "authors": item.authors,
-        "journal": item.journal,
-        "year": item.year,
         "abstract": item.abstract,
-        "pdf_url": item.pdf_url,
-        "ingestion_source": item.ingestion_source,
-        "ingestion_timestamp": item.ingestion_timestamp,
+        "doi": item.doi,
+        "pmid": item.pmid,
+        "year_published": item.year_published,
+        "journal": item.journal,
+        "first_author": item.first_author,
+        "authors_display": item.authors_display,
+        "source_type": item.source_type,
+        "ingestion_status": item.ingestion_status,
+        "notes": item.notes,
+        "created_at": item.created_at,
     }
 
 
@@ -102,16 +111,7 @@ def _normalize_edit_payload(payload: dict) -> dict:
         if key not in payload:
             continue
         value = payload.get(key)
-        if key == "authors":
-            if value is None:
-                cleaned[key] = []
-            elif isinstance(value, str):
-                cleaned[key] = [item.strip() for item in value.split(",") if item]
-            elif isinstance(value, list):
-                cleaned[key] = [
-                    str(item).strip() for item in value if str(item).strip()
-                ]
-        elif key == "year":
+        if key == "year_published":
             if value is None or value == "":
                 cleaned[key] = None
             elif isinstance(value, int):
@@ -119,7 +119,7 @@ def _normalize_edit_payload(payload: dict) -> dict:
             elif isinstance(value, str) and value.strip().isdigit():
                 cleaned[key] = int(value.strip())
             else:
-                raise ValueError("Invalid year value.")
+                raise ValueError("Invalid year_published value.")
         else:
             cleaned[key] = value
     return cleaned
@@ -156,14 +156,22 @@ def approve_paper_staging(db: Session, idx: int) -> PapersStaging:
 
         paper_fields = {
             "title": item.title,
-            "authors": item.authors,
-            "journal": item.journal,
-            "year": item.year,
             "abstract": item.abstract,
-            "pages_content": item.pages_content,
-            "pdf_url": item.pdf_url,
-            "ingestion_source": item.ingestion_source,
-            "embedding": item.embedding,
+            "doi": item.doi,
+            "pmid": item.pmid,
+            "year_published": item.year_published,
+            "journal": item.journal,
+            "first_author": item.first_author,
+            "authors_display": item.authors_display,
+            "source_type": item.source_type,
+            "source_record_id": item.source_record_id,
+            "pdf_storage_path": item.pdf_storage_path,
+            "full_text_available": item.full_text_available,
+            "ocr_required": item.ocr_required,
+            "language": item.language,
+            "ingestion_status": item.ingestion_status,
+            "dedupe_key": item.dedupe_key,
+            "notes": item.notes,
         }
 
         if item.id is None:
@@ -206,39 +214,20 @@ def update_paper_staging(
     if not cleaned:
         raise ValueError("No editable fields provided.")
 
-    merged_title = cleaned.get("title", original.title)
-    merged_abstract = cleaned.get("abstract", original.abstract)
-    should_reembed = ("title" in cleaned and merged_title != original.title) or (
-        "abstract" in cleaned and merged_abstract != original.abstract
-    )
-
     with db.begin_nested():
-        # 1) 원본 + 수정 payload를 합친 "수정본"으로 papers 생성/업데이트
         edited_fields = {
-            "title": merged_title,
-            "authors": cleaned.get("authors", original.authors),
+            "title": cleaned.get("title", original.title),
+            "abstract": cleaned.get("abstract", original.abstract),
+            "doi": cleaned.get("doi", original.doi),
+            "pmid": cleaned.get("pmid", original.pmid),
+            "year_published": cleaned.get("year_published", original.year_published),
             "journal": cleaned.get("journal", original.journal),
-            "year": cleaned.get("year", original.year),
-            "abstract": merged_abstract,
-            "pages_content": original.pages_content,
-            "pdf_url": cleaned.get("pdf_url", original.pdf_url),
-            "ingestion_source": cleaned.get(
-                "ingestion_source", original.ingestion_source
-            ),
+            "first_author": cleaned.get("first_author", original.first_author),
+            "authors_display": cleaned.get("authors_display", original.authors_display),
+            "source_type": cleaned.get("source_type", original.source_type),
+            "ingestion_status": cleaned.get("ingestion_status", original.ingestion_status),
+            "notes": cleaned.get("notes", original.notes),
         }
-
-        if should_reembed:
-            new_bi_embedding = embed_bibliographic_info_sync(
-                {
-                    "title": merged_title,
-                    "abstract": merged_abstract,
-                }
-            )
-            edited_fields["embedding"] = (
-                new_bi_embedding.get("embedding") if new_bi_embedding else None
-            )
-        else:
-            edited_fields["embedding"] = original.embedding
 
         if original.id is None:
             paper = create_paper(db, **edited_fields)
@@ -246,25 +235,12 @@ def update_paper_staging(
             paper = get_paper_by_id(db, paper_id=original.id)
             if paper is None:
                 raise ValueError("Referenced paper not found.")
-
-            if not should_reembed and edited_fields.get("embedding") is None:
-                edited_fields["embedding"] = paper.embedding
-
             paper = update_paper_fields(db, item=paper, fields=edited_fields)
 
-        # 2) papers_id를 가진 papers_staging row 생성 (로깅 목적)
         log_row = create_papers_staging(
             db,
             paper_id=paper.id,
-            title=edited_fields["title"],
-            authors=edited_fields["authors"],
-            journal=edited_fields["journal"],
-            year=edited_fields["year"],
-            abstract=edited_fields["abstract"],
-            pages_content=edited_fields["pages_content"],
-            pdf_url=edited_fields["pdf_url"],
-            ingestion_source=edited_fields["ingestion_source"],
-            embedding=edited_fields["embedding"],
+            **edited_fields,
         )
         update_papers_staging_fields(
             db,
@@ -275,7 +251,6 @@ def update_paper_staging(
             },
         )
 
-        # 3) 기존 원본 idx row도 승인 처리해서 fetch 대상에서 제외
         return update_papers_staging_fields(
             db,
             item=original,
@@ -306,42 +281,23 @@ def update_paper(
     if not cleaned:
         raise ValueError("No editable fields provided.")
 
-    merged_title = cleaned.get("title", item.title)
-    merged_abstract = cleaned.get("abstract", item.abstract)
-    should_reembed = ("title" in cleaned and merged_title != item.title) or (
-        "abstract" in cleaned and merged_abstract != item.abstract
-    )
-
     with db.begin_nested():
-        updated_fields = {**cleaned}
-        embedding_to_log = item.embedding
-        if should_reembed:
-            new_bi_embedding = embed_bibliographic_info_sync(
-                {
-                    "title": merged_title,
-                    "abstract": merged_abstract,
-                }
-            )
-            embedding_to_log = (
-                new_bi_embedding.get("embedding") if new_bi_embedding else None
-            )
-            updated_fields["embedding"] = embedding_to_log
-
-        updated = update_paper_fields(db, item=item, fields=updated_fields)
+        updated = update_paper_fields(db, item=item, fields=cleaned)
 
         create_papers_staging(
             db,
             paper_id=updated.id,
             title=updated.title,
-            authors=updated.authors,
-            journal=updated.journal,
-            year=updated.year,
             abstract=updated.abstract,
-            pages_content=updated.pages_content,
-            pdf_url=updated.pdf_url,
-            ingestion_source=updated.ingestion_source,
-            embedding=embedding_to_log,
-            ingestion_timestamp=updated.ingestion_timestamp,
+            doi=updated.doi,
+            pmid=updated.pmid,
+            year_published=updated.year_published,
+            journal=updated.journal,
+            first_author=updated.first_author,
+            authors_display=updated.authors_display,
+            source_type=updated.source_type,
+            ingestion_status=updated.ingestion_status,
+            notes=updated.notes,
             is_approved=True,
             approval_timestamp=func.now(),
         )

@@ -1,48 +1,9 @@
 from __future__ import annotations
 
-from typing import Any, Sequence
-
-from sqlalchemy import select, literal
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.papers import Papers
-
-
-def find_similar_papers(
-    db: Session,
-    *,
-    embedding: Sequence[float],
-    limit: int = 10,
-    min_similarity: float | None = None,
-) -> list[dict[str, Any]]:
-    # 핵심: embedding을 문자열로 만들지 말고, "그대로" 바인딩
-    embedding_vector = list(map(float, embedding))
-    distance = Papers.embedding.cosine_distance(embedding_vector)
-    similarity = (literal(1.0) - distance).label("similarity")
-
-    query = (
-        select(
-            Papers.id,
-            Papers.title,
-            Papers.authors,
-            Papers.journal,
-            Papers.year,
-            Papers.abstract,
-            Papers.pdf_url,
-            Papers.ingestion_source,
-            Papers.ingestion_timestamp,
-            similarity,
-        )
-        .where(Papers.embedding.isnot(None))
-        .order_by(distance)
-        .limit(int(limit))
-    )
-
-    if min_similarity is not None:
-        query = query.where(similarity >= float(min_similarity))
-
-    result = db.execute(query)
-    return [dict(row) for row in result.mappings().all()]
 
 
 def list_papers(
@@ -60,25 +21,43 @@ def create_paper(
     db: Session,
     *,
     title: str,
-    authors: list[str] | None = None,
-    journal: str | None = None,
-    year: int | None = None,
     abstract: str | None = None,
-    pages_content: list[dict[str, Any]] | None = None,
-    pdf_url: str | None = None,
-    ingestion_source: str | None = None,
-    embedding: list[float] | None = None,
+    doi: str | None = None,
+    pmid: str | None = None,
+    year_published: int | None = None,
+    journal: str | None = None,
+    first_author: str | None = None,
+    authors_display: str | None = None,
+    source_type: str | None = None,
+    source_record_id: str | None = None,
+    pdf_storage_path: str | None = None,
+    full_text_available: bool = False,
+    ocr_required: bool | None = None,
+    language: str = "en",
+    ingestion_status: str | None = None,
+    dedupe_key: str | None = None,
+    notes: str | None = None,
+    created_by=None,
 ) -> Papers:
     paper = Papers(
         title=title,
-        authors=authors or [],
-        journal=journal,
-        year=year,
         abstract=abstract,
-        pages_content=pages_content,
-        pdf_url=pdf_url,
-        ingestion_source=ingestion_source,
-        embedding=embedding,
+        doi=doi,
+        pmid=pmid,
+        year_published=year_published,
+        journal=journal,
+        first_author=first_author,
+        authors_display=authors_display,
+        source_type=source_type,
+        source_record_id=source_record_id,
+        pdf_storage_path=pdf_storage_path,
+        full_text_available=full_text_available,
+        ocr_required=ocr_required,
+        language=language,
+        ingestion_status=ingestion_status,
+        dedupe_key=dedupe_key,
+        notes=notes,
+        created_by=created_by,
     )
     db.add(paper)
     db.flush()

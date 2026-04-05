@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Text, DateTime, func, text, ForeignKey
-from sqlalchemy.dialects.postgresql import JSONB, UUID
+from sqlalchemy import Text, Numeric, DateTime, func, text, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from app.core.db import Base
@@ -18,15 +18,24 @@ class Evaluations(Base):
         primary_key=True,
         server_default=text("gen_random_uuid()"),
     )
-    extraction_id: Mapped[UUID] = mapped_column(
+    paper_id: Mapped[UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("cr_soles.papers.id", ondelete="CASCADE"),
+    )
+    extraction_id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
         ForeignKey("cr_soles.extractions.id", ondelete="CASCADE"),
-        nullable=False,
     )
-    evaluator_id: Mapped[str] = mapped_column(Text, nullable=False)
-    agreement_scores: Mapped[dict | None] = mapped_column(JSONB)
+    evaluator_id: Mapped[UUID | None] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+    )
+    evaluation_type: Mapped[str | None] = mapped_column(Text)
+    dimension: Mapped[str | None] = mapped_column(Text)
+    score: Mapped[float | None] = mapped_column(Numeric)
+    label: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
-    evaluation_timestamp: Mapped[datetime] = mapped_column(
+    created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
