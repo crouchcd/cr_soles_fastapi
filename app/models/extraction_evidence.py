@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class ExtractionEvidence(Base):
     __tablename__ = "extraction_evidence"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,7 +20,7 @@ class ExtractionEvidence(Base):
     )
     extraction_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.extractions.id", ondelete="CASCADE"),
+        ForeignKey("public.extractions.id", ondelete="CASCADE"),
         nullable=False,
     )
     field_name: Mapped[str | None] = mapped_column(Text)

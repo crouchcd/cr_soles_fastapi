@@ -17,17 +17,17 @@ def build_document_graph():
     graph.add_node("ocr", run_ocr)
     graph.add_node("extract_bibliographic_info", extract_bibliographic_info)
     graph.add_node("prepare_retry", prepare_retry)
-    graph.add_node("embed", embed_data)
+    # graph.add_node("embed", embed_data)
 
     graph.set_entry_point("ocr")
     graph.add_edge("ocr", "extract_bibliographic_info")
     graph.add_conditional_edges(
         "extract_bibliographic_info",
         should_retry,
-        {"retry": "prepare_retry", "end": "embed"},
+        {"retry": "prepare_retry", "end": END},
     )
     graph.add_edge("prepare_retry", "extract_bibliographic_info")
-    graph.add_edge("embed", END)
+    # graph.add_edge("embed", END)
     return graph.compile()
 
 

@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class PaperFiles(Base):
     __tablename__ = "paper_files"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,7 +20,7 @@ class PaperFiles(Base):
     )
     paper_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.papers.id", ondelete="CASCADE"),
+        ForeignKey("public.papers.id", ondelete="CASCADE"),
         nullable=False,
     )
     file_kind: Mapped[str | None] = mapped_column(Text)
@@ -33,7 +33,7 @@ class PaperFiles(Base):
     is_primary: Mapped[bool | None] = mapped_column(Boolean)
     uploaded_by: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+        ForeignKey("public.profiles.id", ondelete="SET NULL"),
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

@@ -34,7 +34,7 @@ def create_paper(
     full_text_available: bool = False,
     ocr_required: bool | None = None,
     language: str = "en",
-    ingestion_status: str | None = None,
+    ingestion_status: str = "queued",
     dedupe_key: str | None = None,
     notes: str | None = None,
     created_by=None,

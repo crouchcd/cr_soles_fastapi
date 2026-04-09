@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class Extractions(Base):
     __tablename__ = "extractions"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,12 +20,12 @@ class Extractions(Base):
     )
     paper_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.papers.id", ondelete="CASCADE"),
+        ForeignKey("public.papers.id", ondelete="CASCADE"),
         nullable=False,
     )
     run_id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.pipeline_runs.id", ondelete="SET NULL"),
+        ForeignKey("public.pipeline_runs.id", ondelete="SET NULL"),
     )
     extraction_version: Mapped[str] = mapped_column(Text, nullable=False)
     is_current: Mapped[bool | None] = mapped_column(Boolean)
@@ -53,7 +53,7 @@ class Extractions(Base):
     human_review_status: Mapped[str | None] = mapped_column(Text)
     reviewed_by: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+        ForeignKey("public.profiles.id", ondelete="SET NULL"),
     )
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(

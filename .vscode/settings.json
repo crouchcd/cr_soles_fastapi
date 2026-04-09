@@ -1,6 +1,5 @@
 {
-  "python.defaultInterpreterPath": "/Users/ramheeyeon/miniconda3/envs/cr_soles/bin/python",
+  "python.defaultInterpreterPath": "/Users/ramheeyeon/miniconda3/envs/cr_soales/bin/python",
   "python-envs.defaultEnvManager": "ms-python.python:conda",
-  "python-envs.defaultPackageManager": "ms-python.python:conda",
-  "python-envs.pythonProjects": []
+  "python-envs.defaultPackageManager": "ms-python.python:conda"
 }

@@ -2,8 +2,8 @@ from fastapi import APIRouter, Body, Depends, HTTPException, Query
 
 from app.services.paper_review import (
     fetch_review_papers,
-    update_paper_staging as update_paper_staging_service,
-    approve_paper_staging,
+    # update_paper_staging as update_paper_staging_service,
+    # approve_paper_staging,
     update_paper,
 )
 from app.core.logger import set_log
@@ -42,24 +42,24 @@ async def fetch_all_papers_staging(
         ) from exc
 
 
-@router.post(f"{router_prefix}/update/paper_staging", tags=["document"])
-async def update_paper_staging_route(
-    id: str = Query(...),
-    payload: dict | str = Body(...),
-    db: Session = Depends(get_db),
-):
-    set_log("update_paper_staging")
-    try:
-        updated = update_paper_staging_service(db, identifier=id, payload=payload)
-        return {"id": updated.idx}
-    except ValueError as exc:
-        set_log(f"ValueError in update_paper_staging: {exc}", level="error")
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        set_log(f"Exception in update_paper_staging: {exc}", level="error")
-        raise HTTPException(
-            status_code=502, detail=f"Paper review update failed: {exc}"
-        ) from exc
+# @router.post(f"{router_prefix}/update/paper_staging", tags=["document"])
+# async def update_paper_staging_route(
+#     id: str = Query(...),
+#     payload: dict | str = Body(...),
+#     db: Session = Depends(get_db),
+# ):
+#     set_log("update_paper_staging")
+#     try:
+#         updated = update_paper_staging_service(db, identifier=id, payload=payload)
+#         return {"id": updated.idx}
+#     except ValueError as exc:
+#         set_log(f"ValueError in update_paper_staging: {exc}", level="error")
+#         raise HTTPException(status_code=400, detail=str(exc)) from exc
+#     except Exception as exc:
+#         set_log(f"Exception in update_paper_staging: {exc}", level="error")
+#         raise HTTPException(
+#             status_code=502, detail=f"Paper review update failed: {exc}"
+#         ) from exc
 
 
 @router.post(f"{router_prefix}/update/paper", tags=["document"])
@@ -82,20 +82,20 @@ async def update_paper_route(
         ) from exc
 
 
-@router.post(f"{router_prefix}/approve/paper_staging", tags=["document"])
-async def approve_paper_route(
-    id: str = Query(...),
-    db: Session = Depends(get_db),
-):
-    set_log("approve_paper")
-    try:
-        updated = approve_paper_staging(db, idx=int(id))
-        return {"id": updated.idx}
-    except ValueError as exc:
-        set_log(f"ValueError in approve_paper: {exc}", level="error")
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
-    except Exception as exc:
-        set_log(f"Exception in approve_paper: {exc}", level="error")
-        raise HTTPException(
-            status_code=502, detail=f"Paper approval failed: {exc}"
-        ) from exc
+# @router.post(f"{router_prefix}/approve/paper_staging", tags=["document"])
+# async def approve_paper_route(
+#     id: str = Query(...),
+#     db: Session = Depends(get_db),
+# ):
+#     set_log("approve_paper")
+#     try:
+#         updated = approve_paper_staging(db, idx=int(id))
+#         return {"id": updated.idx}
+#     except ValueError as exc:
+#         set_log(f"ValueError in approve_paper: {exc}", level="error")
+#         raise HTTPException(status_code=400, detail=str(exc)) from exc
+#     except Exception as exc:
+#         set_log(f"Exception in approve_paper: {exc}", level="error")
+#         raise HTTPException(
+#             status_code=502, detail=f"Paper approval failed: {exc}"
+#         ) from exc

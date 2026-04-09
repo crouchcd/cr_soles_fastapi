@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class Profiles(Base):
     __tablename__ = "profiles"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(UUID(as_uuid=True), primary_key=True)
     email: Mapped[str | None] = mapped_column(Text, unique=True)

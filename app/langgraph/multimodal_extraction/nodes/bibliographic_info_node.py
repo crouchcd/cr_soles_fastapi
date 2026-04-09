@@ -6,7 +6,6 @@ from typing import Any
 import httpx
 
 from app.prompts.multimodal_extraction import (
-    get_bibliographic_info_determine_completion_prompt,
     get_bibliographic_info_extraction_prompt,
 )
 from app.langgraph.multimodal_extraction.state import DocumentState
@@ -77,30 +76,6 @@ def _find_missing_fields(bibliographic_info: dict[str, Any]) -> list[str]:
     return missing
 
 
-def _merge_bibliographic_info(
-    base: dict[str, Any] | None,
-    incoming: dict[str, Any],
-) -> dict[str, Any]:
-    merged = dict(base or {})
-    for key in ("title", "journal"):
-        value = incoming.get(key)
-        if value:
-            merged[key] = value
-
-    if incoming.get("authors"):
-        merged["authors"] = incoming["authors"]
-
-    if isinstance(incoming.get("year"), int):
-        merged["year"] = incoming["year"]
-
-    incoming_abstract = incoming.get("abstract") or ""
-    current_abstract = merged.get("abstract") or ""
-    if incoming_abstract and len(incoming_abstract) >= len(current_abstract):
-        merged["abstract"] = incoming_abstract
-
-    return _normalize_bibliographic_info(merged)
-
-
 def _collect_ocr_text(ocr_pages: list[dict], max_pages: int) -> str:
     snippets: list[str] = []
     for page in ocr_pages[:max_pages]:
@@ -110,32 +85,19 @@ def _collect_ocr_text(ocr_pages: list[dict], max_pages: int) -> str:
     return "\n\n".join(snippets)
 
 
-def _is_complete_response(text: str) -> bool:
-    normalized = text.strip().lower()
-    return normalized.startswith("complete")
-
-
 async def extract_bibliographic_info(state: DocumentState) -> DocumentState:
     set_log("Extract_bibliographic_info node")
     ocr_pages = state.get("ocr_pages") or []
     retry_focus = state.get("retry_focus") or []
 
     vllm_client = VllmClient(port="", timeout_s=300.0)
-    bibliographic_info: dict[str, Any] = _normalize_bibliographic_info(
-        state.get("bibliographic_info") or {}
-    )
     raw_text = ""
-    bibliographic_info_complete = False
+    bibliographic_info: dict[str, Any] = {}
 
-    async with httpx.AsyncClient(timeout=300.0, trust_env=False) as client:
-        # limit to first 5 pages to extract bibliographic info
-        ocr_page_len = 5 if len(ocr_pages) > 5 else len(ocr_pages)
-        for page_count in range(1, ocr_page_len + 1):
-            ocr_text = _collect_ocr_text(ocr_pages, page_count)
-            if not ocr_text:
-                continue
+    ocr_text = _collect_ocr_text(ocr_pages, len(ocr_pages))
 
-            # call VLLM to extract bibliographic info
+    if ocr_text:
+        async with httpx.AsyncClient(timeout=300.0, trust_env=False) as client:
             prompt = get_bibliographic_info_extraction_prompt(ocr_text, retry_focus)
             response_payload = await vllm_client.chat(
                 client=client,
@@ -143,52 +105,21 @@ async def extract_bibliographic_info(state: DocumentState) -> DocumentState:
                 user_prompt="Extract the bibliographic information",
                 task_type=VllmTaskType.BIBLIOGRAPHIC_INFO_EXTRACTION,
             )
-
-            # extract response from vLLM
             raw_text = (
                 response_payload.get("choices", [{}])[0]
                 .get("message", {})
                 .get("content", "")
             )
             raw_text = str(raw_text).strip()
-            bibliographic_info_json = _extract_json(raw_text) or {}
-            bibliographic_info = _merge_bibliographic_info(
-                bibliographic_info,
-                _normalize_bibliographic_info(bibliographic_info_json),
-            )
 
-            # check completeness
-            completion_prompt = get_bibliographic_info_determine_completion_prompt()
-            completion_payload = await vllm_client.chat(
-                client=client,
-                system_prompt=str(completion_prompt),
-                user_prompt=(
-                    "OCR TEXT:\n"
-                    f"{ocr_text}\n\n"
-                    "BIBLIOGRAPHIC INFORMATION JSON:\n"
-                    f"{json.dumps(bibliographic_info, ensure_ascii=True)}"
-                ),
-            )
-            completion_text = (
-                completion_payload.get("choices", [{}])[0]
-                .get("message", {})
-                .get("content", "")
-            )
-
-            # determine if bibliographic info is complete
-            bibliographic_info_complete = _is_complete_response(str(completion_text))
-            if bibliographic_info_complete:
-                break
-
+    bibliographic_info = _normalize_bibliographic_info(_extract_json(raw_text) or {})
     missing_fields = _find_missing_fields(bibliographic_info)
-    if not bibliographic_info_complete and not missing_fields:
-        missing_fields = ["incomplete"]
 
     return {
         "bibliographic_info": bibliographic_info,
         "bibliographic_info_raw": raw_text,
         "missing_fields": missing_fields,
-        "bibliographic_info_complete": bibliographic_info_complete,
+        "bibliographic_info_complete": not missing_fields,
     }
 
 

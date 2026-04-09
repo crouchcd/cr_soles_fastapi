@@ -17,6 +17,7 @@ from app.enums.multimodal_extraction import VllmTaskType
 async def run_ocr(state: DocumentState) -> DocumentState:
     set_log("Run_ocr node")
     page_images_b64 = state.get("page_images_b64", [])
+    page_images_b64 = page_images_b64[:3]  # for testing
     if not page_images_b64:
         return {"ocr_pages": [], "ocr_text": ""}
 
@@ -29,7 +30,7 @@ async def run_ocr(state: DocumentState) -> DocumentState:
     vllm_client = VllmClient(
         port="", timeout_s=300.0
     )  # port is empty when run on runpod
-    semaphore = asyncio.Semaphore(4)
+    semaphore = asyncio.Semaphore(10)
 
     def _extract_json_obj(text: str) -> dict[str, Any] | None:
         cleaned = text.strip()

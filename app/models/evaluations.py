@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class Evaluations(Base):
     __tablename__ = "evaluations"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,15 +20,15 @@ class Evaluations(Base):
     )
     paper_id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.papers.id", ondelete="CASCADE"),
+        ForeignKey("public.papers.id", ondelete="CASCADE"),
     )
     extraction_id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.extractions.id", ondelete="CASCADE"),
+        ForeignKey("public.extractions.id", ondelete="CASCADE"),
     )
     evaluator_id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+        ForeignKey("public.profiles.id", ondelete="SET NULL"),
     )
     evaluation_type: Mapped[str | None] = mapped_column(Text)
     dimension: Mapped[str | None] = mapped_column(Text)

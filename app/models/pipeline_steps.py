@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class PipelineSteps(Base):
     __tablename__ = "pipeline_steps"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,7 +20,7 @@ class PipelineSteps(Base):
     )
     run_id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.pipeline_runs.id", ondelete="CASCADE"),
+        ForeignKey("public.pipeline_runs.id", ondelete="CASCADE"),
         nullable=False,
     )
     step_name: Mapped[str | None] = mapped_column(Text)

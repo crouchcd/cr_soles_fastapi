@@ -1,9 +1,9 @@
-# cr_soles_fastapi
+# cr_soales_fastapi
 
 ## Project Structure
 
 ```text
-cr_soles_fastapi
+cr_soales_fastapi
 ├── alembic
 │   ├── env.py
 │   ├── script.py.mako
@@ -157,3 +157,7 @@ To serve VLLM models, see information below:
   # For multiple GPUs with tensor parallelism:
   CUDA_VISIBLE_DEVICES=0,1,2,3 vllm serve Qwen/Qwen3-VL-8B-Instruct --max-model-len 200000 --tensor-parallel-size 4 --gpu-memory-util 0.8 --port 8000
   ```
+
+## Python version and interpreter
+
+- We are using Python 3.14. Make sure to use Python 3.14 when setting up the environment.

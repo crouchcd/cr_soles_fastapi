@@ -11,7 +11,7 @@ from app.core.db import Base
 
 class PipelineRuns(Base):
     __tablename__ = "pipeline_runs"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -20,13 +20,13 @@ class PipelineRuns(Base):
     )
     paper_id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.papers.id", ondelete="SET NULL"),
+        ForeignKey("public.papers.id", ondelete="SET NULL"),
     )
     run_type: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str | None] = mapped_column(Text)
     triggered_by: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+        ForeignKey("public.profiles.id", ondelete="SET NULL"),
     )
     runpod_instance_label: Mapped[str | None] = mapped_column(Text)
     git_commit_sha: Mapped[str | None] = mapped_column(Text)

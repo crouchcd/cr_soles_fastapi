@@ -52,7 +52,7 @@ colorama==0.4.6 ; sys_platform == 'win32' \
 fastapi==0.129.0 \
     --hash=sha256:61315cebd2e65df5f97ec298c888f9de30430dd0612d59d6480beafbc10655af \
     --hash=sha256:b4946880e48f462692b31c083be0432275cbfb6e2274566b1be91479cc1a84ec
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 greenlet==3.3.1 ; platform_machine == 'AMD64' or platform_machine == 'WIN32' or platform_machine == 'aarch64' or platform_machine == 'amd64' or platform_machine == 'ppc64le' or platform_machine == 'win32' or platform_machine == 'x86_64' \
     --hash=sha256:02925a0bfffc41e542c70aa14c7eda3593e4d7e274bfcccca1827e6c0875902e \
     --hash=sha256:301860987846c24cb8964bdec0e31a96ad4a2a801b41b4ef40963c1b44f33451 \
@@ -87,7 +87,7 @@ httpx==0.28.1 \
     --hash=sha256:75e98c5f16b0f35b567856f597f06ff2270a374470a5c2392242528e3e3e42fc \
     --hash=sha256:d909fcccc110f8c7faf814ca82a9a4d816bc5a6dbfea25d6591d6985b8ba59ad
     # via
-    #   cr-soles-fastapi
+    #   cr-soales-fastapi
     #   langgraph-sdk
     #   langsmith
 idna==3.11 \
@@ -115,7 +115,7 @@ langchain-core==1.2.14 \
 langgraph==1.0.9 \
     --hash=sha256:bce0d1f3e9a20434215a2a818395a58aedfc11c87bd6b52706c0db5c05ec44ec \
     --hash=sha256:feac2729faba7d3c325bef76f240d7d7f66b02d2cbf4fdb1ed7d0cc83f963651
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 langgraph-checkpoint==4.0.0 \
     --hash=sha256:3fa9b2635a7c5ac28b338f631abf6a030c3b508b7b9ce17c22611513b589c784 \
     --hash=sha256:814d1bd050fac029476558d8e68d87bce9009a0262d04a2c14b918255954a624
@@ -203,7 +203,7 @@ packaging==26.0 \
 pgvector==0.4.2 \
     --hash=sha256:322cac0c1dc5d41c9ecf782bd9991b7966685dee3a00bc873631391ed949513a \
     --hash=sha256:549d45f7a18593783d5eec609ea1684a724ba8405c4cb182a0b2b08aeff04e08
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 psycopg2-binary==2.9.11 \
     --hash=sha256:32770a4d666fbdafab017086655bcddab791d7cb260a16679cc5a7338b64343b \
     --hash=sha256:4012c9c954dfaccd28f94e84ab9f94e12df76b4afb22331b1f0d3154893a6316 \
@@ -217,7 +217,7 @@ psycopg2-binary==2.9.11 \
     --hash=sha256:e0deeb03da539fa3577fcb0b3f2554a97f7e5477c246098dbb18091a4a01c16f \
     --hash=sha256:e35b7abae2b0adab776add56111df1735ccc71406e56203515e228a8dc07089f \
     --hash=sha256:fcf21be3ce5f5659daefd2b3b3b6e4727b028221ddc94e6c1523425579664747
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 pydantic==2.12.5 \
     --hash=sha256:4d351024c75c0f085a9febbb665ce8c0c6ec5d30e903bdb6394b7ede26aebb49 \
     --hash=sha256:e561593fccf61e8a20fc46dfc2dfe075b8be7d0188df33f221ad1f0139180f9d
@@ -261,7 +261,7 @@ pydantic-core==2.41.5 \
 pydantic-settings==2.13.1 \
     --hash=sha256:b4c11847b15237fb0171e1462bf540e294affb9b86db4d9aa5c01730bdbe4025 \
     --hash=sha256:d56fd801823dbeae7f0975e1f8c8e25c258eb75d278ea7abb5d9cebb01b56237
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 pymupdf==1.27.1 \
     --hash=sha256:2c9d9353b840040cbc724341f4095fb7e2cc1a12a9147d0ec1a0a79f5d773147 \
     --hash=sha256:3de95a0889395b0966fafd11b94980b7543a816e89dd1c218597a08543ac3415 \
@@ -271,7 +271,7 @@ pymupdf==1.27.1 \
     --hash=sha256:aeaed76e72cbc061149a825ab0811c5f4752970c56591c2938c5042ec06b26e1 \
     --hash=sha256:bee9f95512f9556dbf2cacfd1413c61b29a55baa07fa7f8fc83d221d8419888a \
     --hash=sha256:fa33b512d82c6c4852edadf57f22d5f27d16243bb33dac0fbe4eb0f281c5b17e
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 python-dotenv==1.2.1 \
     --hash=sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6 \
     --hash=sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61
@@ -279,7 +279,7 @@ python-dotenv==1.2.1 \
 python-multipart==0.0.22 \
     --hash=sha256:2b2cd894c83d21bf49d702499531c7bafd057d730c201782048f7945d82de155 \
     --hash=sha256:7340bef99a7e0032613f56dc36027b959fd3b30a787ed62d310e951f7c3a3a58
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 pyyaml==6.0.3 \
     --hash=sha256:00c4bdeba853cc34e7dd471f16b4114f4162dc03e6b7afcc2128711f0eca823c \
     --hash=sha256:02893d100e99e03eda1c8fd5c441d8c60103fd175728e23e431db1b589cf5ab3 \
@@ -325,7 +325,7 @@ sqlalchemy==2.0.46 \
     --hash=sha256:cf36851ee7219c170bb0793dbc3da3e80c582e04a5437bc601bfe8c85c9216d7 \
     --hash=sha256:f9c11766e7e7c0a2767dda5acb006a118640c9fc0a4104214b96269bfb78399e \
     --hash=sha256:ff33c6e6ad006bbc0f34f5faf941cfc62c45841c64c0a058ac38c799f15b5ede
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 starlette==0.52.1 \
     --hash=sha256:0029d43eb3d273bc4f83a08720b4912ea4b071087a3b48db01b7c839f7954d74 \
     --hash=sha256:834edd1b0a23167694292e94f597773bc3f89f362be6effee198165a35d62933
@@ -377,7 +377,7 @@ uuid-utils==0.14.0 \
 uvicorn==0.41.0 \
     --hash=sha256:09d11cf7008da33113824ee5a1c6422d89fbc2ff476540d69a34c87fab8b571a \
     --hash=sha256:29e35b1d2c36a04b9e180d4007ede3bcb32a85fbdfd6c6aeb3f26839de088187
-    # via cr-soles-fastapi
+    # via cr-soales-fastapi
 xxhash==3.6.0 \
     --hash=sha256:01262da8798422d0685f7cef03b2bd3f4f46511b02830861df548d7def4402ad \
     --hash=sha256:016e9190af8f0a4e3741343777710e3d5717427f175adfdc3e72508f59e2a7f3 \

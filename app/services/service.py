@@ -6,7 +6,8 @@ import fitz  # PyMuPDF
 
 from app.langgraph.multimodal_extraction import get_document_graph
 from app.core.logger import set_log
-from app.repositories.papers_staging_repository import create_papers_staging
+from app.repositories.papers_repository import create_paper
+# from app.repositories.papers_staging_repository import create_papers_staging
 from sqlalchemy.orm import Session
 
 
@@ -79,7 +80,7 @@ async def run_service(
     first_author = bibliographic_info.get("first_author") or None
     authors_display = bibliographic_info.get("authors_display") or None
 
-    paper = create_papers_staging(
+    paper = create_paper(
         db,
         title=title,
         abstract=abstract,

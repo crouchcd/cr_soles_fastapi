@@ -11,12 +11,12 @@ from app.core.db import Base
 
 class PapersStaging(Base):
     __tablename__ = "staging_papers"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = {"schema": "public"}
 
     idx: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
     id: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.papers.id", ondelete="CASCADE"),
+        ForeignKey("public.papers.id", ondelete="CASCADE"),
         nullable=True,
         index=True,
     )

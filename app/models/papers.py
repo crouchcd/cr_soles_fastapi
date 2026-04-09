@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import Text, Integer, Boolean, DateTime, func, text, ForeignKey
+from sqlalchemy import Text, Integer, Boolean, DateTime, CheckConstraint, Index, func, text, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
@@ -11,7 +11,21 @@ from app.core.db import Base
 
 class Papers(Base):
     __tablename__ = "papers"
-    __table_args__ = {"schema": "cr_soles"}
+    __table_args__ = (
+        CheckConstraint(
+            "ingestion_status = ANY (ARRAY['queued'::text, 'ingested'::text, 'failed'::text, 'needs_review'::text])",
+            name="papers_ingestion_status_check",
+        ),
+        CheckConstraint(
+            "year_published IS NULL OR (year_published >= 1800 AND year_published <= 2100)",
+            name="papers_year_check",
+        ),
+        Index("idx_papers_doi", "doi"),
+        Index("idx_papers_year_published", "year_published"),
+        Index("idx_papers_first_author", "first_author"),
+        Index("idx_papers_ingestion_status", "ingestion_status"),
+        {"schema": "public"},
+    )
 
     id: Mapped[UUID] = mapped_column(
         UUID(as_uuid=True),
@@ -32,16 +46,20 @@ class Papers(Base):
     full_text_available: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("false")
     )
-    ocr_required: Mapped[bool | None] = mapped_column(Boolean)
+    ocr_required: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
+    )
     language: Mapped[str] = mapped_column(
         Text, nullable=False, server_default=text("'en'")
     )
-    ingestion_status: Mapped[str | None] = mapped_column(Text)
+    ingestion_status: Mapped[str] = mapped_column(
+        Text, nullable=False, server_default=text("'queued'")
+    )
     dedupe_key: Mapped[str | None] = mapped_column(Text)
     notes: Mapped[str | None] = mapped_column(Text)
     created_by: Mapped[UUID | None] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("cr_soles.profiles.id", ondelete="SET NULL"),
+        ForeignKey("public.profiles.id", ondelete="SET NULL"),
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

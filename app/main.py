@@ -20,8 +20,11 @@ set_log("App started")
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://cr-soales.cloud",
     "https://cr-soles.cloud",
+    "https://www.cr-soales.cloud",
     "https://www.cr-soles.cloud",
+    "https://dashboard.cr-soales.cloud",
     "https://dashboard.cr-soles.cloud",
     "https://cr-soles-eepg6ul8d-ramheeyees-projects.vercel.app",
 ]
