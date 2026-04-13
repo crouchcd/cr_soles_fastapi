@@ -17,7 +17,7 @@ from app.enums.multimodal_extraction import VllmTaskType
 async def run_ocr(state: DocumentState) -> DocumentState:
     set_log("Run_ocr node")
     page_images_b64 = state.get("page_images_b64", [])
-    page_images_b64 = page_images_b64[:3]  # for testing
+    # page_images_b64 = page_images_b64[:3]  # for testing
     if not page_images_b64:
         return {"ocr_pages": [], "ocr_text": ""}
 
